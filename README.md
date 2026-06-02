@@ -32,3 +32,10 @@ $ npm run build:mac
 # For Linux
 $ npm run build:linux
 ```
+echo "# Covenant-App" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+
+git push -u origin main
