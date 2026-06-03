@@ -749,3 +749,221 @@ code {
     display: none;
   }
 }
+/* Container Background & Centering */
+.expense-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Base Card Styles */
+.expense-card {
+  width: 100%;
+  max-width: 920px;
+  min-width: 680px;
+  max-height: calc(100vh - 80px);
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+  overflow: auto;
+  margin-top: 0px;
+}
+
+.expense-card::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* Header UI Elements */
+.expense-header {
+  padding: 32px 40px;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.expense-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.expense-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Form Structural Layout */
+.expense-form {
+  padding: 32px 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-fields-container {
+  background-color: rgba(249, 250, 251, 0.5);
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid #f3f4f6;
+}
+
+.fields-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 24px;
+}
+
+.fields-section-title span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.icon-fields {
+  color: #4b5563;
+}
+
+/* Form Inputs Grid System */
+.fields-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px 24px;
+}
+
+@media (min-width: 768px) {
+  .fields-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* General Inputs, Selects & Textareas Styling */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+  border-radius: 8px;
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.form-input.has-icon-left {
+  padding-left: 40px;
+}
+
+.form-select {
+  padding-right: 40px;
+  appearance: none;
+}
+
+.form-textarea {
+  resize: none;
+}
+
+/* Input States */
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 1px #000000;
+}
+
+/* Built-in Icon Alignments */
+.input-icon-left {
+  position: absolute;
+  left: 12px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 12px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Currency Badge Component */
+.currency-badge {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid #e5e7eb;
+}
+
+/* Buttons System */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-black {
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-black:hover {
+  background-color: #1f2937;
+}
+
+.btn-small {
+  font-size: 12px;
+  padding: 10px 16px;
+}
+
+.btn-large {
+  flex: 1;
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 12px;
+}
