@@ -1,4 +1,15 @@
+import data from '../../../../data.js'
+
 const Dashboard = () => {
+  const transactions = data.church_expense_tracker.records;
+  const totalIncome = transactions
+    .filter((t) => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = transactions
+    .filter((t) => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const netBalance = totalIncome - totalExpense;
+
   return (
     <main className="page-content">
       <section className="page-hero">
@@ -13,16 +24,16 @@ const Dashboard = () => {
 
       <section className="dashboard-cards">
         <article className="stat-card">
-          <p>Total Funds</p>
-          <strong>GHS 18,250</strong>
-        </article>
-        <article className="stat-card">
           <p>Total Income</p>
-          <strong>GHS 12,840</strong>
+          <strong>GHS {totalIncome.toLocaleString()}</strong>
         </article>
         <article className="stat-card">
           <p>Total Expense</p>
-          <strong>GHS 4,590</strong>
+          <strong>GHS {totalExpense.toLocaleString()}</strong>
+        </article>
+        <article className="stat-card">
+          <p>Net Balance</p>
+          <strong>GHS {netBalance.toLocaleString()}</strong>
         </article>
       </section>
 
