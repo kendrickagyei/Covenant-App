@@ -1,5 +1,6 @@
-import data from '../../../../data.js'
-
+import data from '../../../../data.js';
+import LineGraph from '../chart/lineGraph.jsx';
+import BarGraph from '../chart/barGraph.jsx';
 const Dashboard = () => {
   const transactions = data.church_expense_tracker.records;
   const totalIncome = transactions
@@ -41,30 +42,21 @@ const Dashboard = () => {
         <div className="dashboard-chart-card">
           <div className="panel-header">
             <div>
-              <h2>Giving Trend</h2>
-              <p className="panel-subtext">Last 6 months income and expense</p>
+              <h2>Giving Trends</h2>
+              <p className="panel-subtext">Income vs Expense over categories</p>
             </div>
-            <span>Updated today</span>
+            <span>June 2026</span>
           </div>
-          <div className="chart-grid">
-            <div className="chart-bar" style={{ height: '68%' }}>
-              <span>Jan</span>
-            </div>
-            <div className="chart-bar" style={{ height: '82%' }}>
-              <span>Feb</span>
-            </div>
-            <div className="chart-bar" style={{ height: '61%' }}>
-              <span>Mar</span>
-            </div>
-            <div className="chart-bar" style={{ height: '95%' }}>
-              <span>Apr</span>
-            </div>
-            <div className="chart-bar" style={{ height: '78%' }}>
-              <span>May</span>
-            </div>
-            <div className="chart-bar" style={{ height: '88%' }}>
-              <span>Jun</span>
-            </div>
+
+          <div className="main-chart" style={{ marginBottom: 18 }}>
+            <BarGraph />
+          </div>
+
+          <div className="charts-grid">
+            <div className="small-chart-card"><LineGraph /></div>
+            <div className="small-chart-card"><LineGraph /></div>
+            <div className="small-chart-card"><LineGraph /></div>
+            <div className="small-chart-card"><LineGraph /></div>
           </div>
         </div>
 

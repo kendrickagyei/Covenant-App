@@ -697,5 +697,9 @@ const data = {
     ]
   }
 }
-
+const chartdata = data.church_expense_tracker.records.map(item => ({
+  x: item.date,
+  y: item.amount
+}));
+console.log(chartdata)
 export default data
