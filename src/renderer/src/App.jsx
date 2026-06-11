@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SideBar from './components/Sidebar/sideBar'
 import appLogo from './assets/wavy-lines.svg'
 import Dashboard from './pages/Dashboard'
@@ -9,23 +9,32 @@ import Settings from './pages/Settings'
 import Support from './pages/Support'
 
 const pageComponents = {
-  Dashboard: <Dashboard />,
-  Expenses: <Expenses />,
-  Transactions: <Transactions />,
-  Portfolio: <Portfolio />,
-  Settings: <Settings />,
-  Support: <Support />,
+  Dashboard,
+  Expenses,
+  Transactions,
+  Portfolio,
+  Settings,
+  Support,
 }
 
 function App() {
   const [activePage, setActivePage] = useState('Dashboard')
+  const [theme, setTheme] = useState(() => localStorage.getItem('covenant-theme') || 'light')
+  const Page = pageComponents[activePage]
+
+  useEffect(() => {
+    document.body.dataset.theme = theme
+    localStorage.setItem('covenant-theme', theme)
+  }, [theme])
 
   return (
     <div className="app-shell">
       <SideBar activePage={activePage} onNavigate={setActivePage} logo={appLogo} />
       <div className="app-main">
-        {pageComponents[activePage] || (
-          <div style={{ padding: '32px', color: '#111827' }}>
+        {Page ? (
+          <Page theme={theme} onThemeChange={setTheme} />
+        ) : (
+          <div style={{ padding: '32px', color: 'var(--text-primary)' }}>
             <h2>Page not found</h2>
             <p>The selected page is not available.</p>
           </div>

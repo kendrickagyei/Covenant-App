@@ -1,0 +1,41 @@
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import netBalanceData from './netBalanceData.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    title: {
+      display: true,
+      text: 'Monthly Net Balance',
+      font: { style: 'normal', size: 15, weight: 'bold' },
+      padding: { bottom: 10 },
+      color: '#111827',
+    },
+    legend: { display: false },
+  },
+  scales: {
+    x: {
+      ticks: {
+        font: { style: 'normal' },
+      },
+      grid: { display: false },
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: { style: 'normal' },
+      },
+      grid: { color: 'rgba(0, 0, 0, 0.06)' },
+    },
+  },
+};
+
+const NetBalanceChart = () => {
+  return <Bar data={netBalanceData} options={options} />;
+};
+
+export default NetBalanceChart;

@@ -1,6 +1,11 @@
 import data from '../../../../data.js';
 import LineGraph from '../chart/lineGraph.jsx';
 import BarGraph from '../chart/barGraph.jsx';
+import DoughnutChart from '../chart/doughnutChart.jsx';
+import ExpenseDoughnutChart from '../chart/expenseDoughnutChart.jsx';
+import TopExpensesChart from '../chart/topExpensesChart.jsx';
+import NetBalanceChart from '../chart/netBalanceChart.jsx';
+import SubcategoryExpenseChart from '../chart/subcategoryExpenseChart.jsx';
 const Dashboard = () => {
   const transactions = data.church_expense_tracker.records;
   const totalIncome = transactions
@@ -13,13 +18,9 @@ const Dashboard = () => {
 
   return (
     <main className="page-content">
-      <section className="page-hero">
+      <section className="page-hero" style={{ marginBottom: 18 }}>
         <div>
-          <p className="page-subtitle">Welcome back, Covenant Leader</p>
-          <h1>Dashboard</h1>
-          <p className="page-description">
-            Clean finance overview with totals, recent expenses, and giving trends.
-          </p>
+          <h1 style={{ margin: 0 }}>Dashboard</h1>
         </div>
       </section>
 
@@ -48,48 +49,22 @@ const Dashboard = () => {
             <span>June 2026</span>
           </div>
 
-          <div className="main-chart" style={{ marginBottom: 18 }}>
+          <div className="main-chart" style={{ marginBottom: 18, height: 350 }}>
             <BarGraph />
           </div>
 
           <div className="charts-grid">
-            <div className="small-chart-card"><LineGraph /></div>
-            <div className="small-chart-card"><LineGraph /></div>
-            <div className="small-chart-card"><LineGraph /></div>
-            <div className="small-chart-card"><LineGraph /></div>
+            <div className="small-chart-card"><TopExpensesChart /></div>
+            <div className="small-chart-card"><DoughnutChart /></div>
+            <div className="small-chart-card"><ExpenseDoughnutChart /></div>
+            <div className="small-chart-card"><NetBalanceChart /></div>
           </div>
         </div>
 
-        <div className="recent-activity-card">
-          <div className="panel-header">
-            <div>
-              <h2>Last 5 Expenses</h2>
-              <p className="panel-subtext">Most recent outgoing payments</p>
-            </div>
-            <span>June 2026</span>
+        <div className="recent-activity-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ height: '100%', padding: '16px' }}>
+            <SubcategoryExpenseChart />
           </div>
-          <ul className="activity-list">
-            <li>
-              <strong>GHS 415</strong>
-              <span>Electricity bill</span>
-            </li>
-            <li>
-              <strong>GHS 200</strong>
-              <span>Pastor fuel allowance</span>
-            </li>
-            <li>
-              <strong>GHS 160</strong>
-              <span>Report printing</span>
-            </li>
-            <li>
-              <strong>GHS 420</strong>
-              <span>ECG bill payment</span>
-            </li>
-            <li>
-              <strong>GHS 200</strong>
-              <span>Visitation transport</span>
-            </li>
-          </ul>
         </div>
       </section>
     </main>
