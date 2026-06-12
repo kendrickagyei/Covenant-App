@@ -1,231 +1,229 @@
-# Covenant App — Code Explanation
+# 🧠 Covenant App — Code Explained for Beginners
 
-A reference document explaining the app's architecture, patterns, and potentially confusing code for future review.
-
----
-
-## Table of Contents
-
-1. [Project Structure](#1-project-structure)
-2. [App Shell & Routing (App.jsx)](#2-app-shell--routing-appjsx)
-3. [Sidebar Navigation (sideBar.jsx)](#3-sidebar-navigation-sidebarjsx)
-4. [Chart Architecture](#4-chart-architecture)
-5. [Data Layer & Date Handling](#5-data-layer--date-handling)
-6. [Theme Toggle System](#6-theme-toggle-system)
-7. [Transactions Table](#7-transactions-table)
-8. [Expenses Form Page](#8-expenses-form-page)
+This document explains **every part** of this app in simple terms.  
+Think of it as a map that shows what each file does, why certain code was written that way, and what to watch out for.
 
 ---
 
-## 1. Project Structure
+## 📁 Table of Contents
+
+1. [What Is This App?](#1-what-is-this-app)
+2. [Project Folder Structure](#2-project-folder-structure)
+3. [App.jsx — The Boss Component](#3-appjsx--the-boss-component)
+4. [Sidebar (sideBar.jsx) — The Navigation Menu](#4-sidebar-sidebarjsx--the-navigation-menu)
+5. [The Data Store (dataStore.js) — Where All Data Lives](#5-the-data-store-datastorejs--where-all-data-lives)
+6. [Dashboard (Dashboard.jsx) — The Main Page](#6-dashboard-dashboardjsx--the-main-page)
+7. [Transaction Table (Transactions.jsx) — The Data Grid](#7-transaction-table-transactionsjsx--the-data-grid)
+8. [Expenses Form (Expenses.jsx) — Adding Records](#8-expenses-form-expensesjsx--adding-records)
+9. [Chart System (chart/ folder) — The Graphs](#9-chart-system-chart-folder--the-graphs)
+10. [Settings Page (Settings.jsx) — Theme & Data Import](#10-settings-page-settingsjsx--theme--data-import)
+11. [CSS System (main.css) — How Styling Works](#11-css-system-maincss--how-styling-works)
+12. [data.js — The Bundled Sample Data](#12-datajs--the-bundled-sample-data)
+13. [Bugs We Found and Fixed](#13-bugs-we-found-and-fixed)
+
+---
+
+## 1. What Is This App?
+
+This is a **church expense tracker** built with:
+- **React** (a JavaScript library for building user interfaces)
+- **Electron** (turns web apps into desktop apps)
+- **Chart.js** (draws charts and graphs)
+- **Lucide React** (icon library that automatically works in light/dark mode)
+
+It helps a church track income and expenses, view charts, and manage financial data.
+
+---
+
+## 2. Project Folder Structure
 
 ```
-src/
-  main/                   # Electron main process
-  preload/                # Electron preload scripts
-  renderer/
-    src/
-      App.jsx             # Root component (routing + theme)
-      main.jsx            # React entry point
-      assets/
-        main.css          # All global styles (~1115 lines)
-      chart/              # Data builders + Chart.js wrapper components
-      components/
-        Sidebar/
-          sideBar.jsx     # Navigation sidebar
-      pages/
-        Dashboard.jsx     # Main dashboard with filters + charts
-        Expenses.jsx      # Transaction form
-        Transactions.jsx  # Data table
-        Portfolio.jsx     # Placeholder page
-        Settings.jsx      # Settings page
-        Support.jsx       # Placeholder page
+covenantapp/                          # The main app folder
+├── data.js                           # Bundled sample data (68 records)
+├── package.json                      # List of dependencies
+├── electron.vite.config.mjs          # Build configuration
+│
+└── src/
+    ├── main/                         # Electron stuff (ignore for now)
+    ├── preload/                      # Electron stuff (ignore for now)
+    │
+    └── renderer/
+        └── src/
+            ├── main.jsx              # Entry point — React starts here
+            ├── App.jsx               # Root component (page selector + theme)
+            ├── assets/
+            │   └── main.css          # ALL the styles (~1150 lines)
+            ├── store/
+            │   └── dataStore.js      # 🔥 Central data hub (NEW)
+            ├── components/
+            │   └── Sidebar/
+            │       └── sideBar.jsx   # Left-side navigation menu
+            ├── pages/
+            │   ├── Dashboard.jsx     # Main page with charts
+            │   ├── Transactions.jsx  # Table of all records
+            │   ├── Expenses.jsx      # Form to add new records
+            │   ├── Portfolio.jsx     # Static info page
+            │   ├── Settings.jsx      # 🔥 Theme toggle + Data Import (UPDATED)
+            │   └── Support.jsx       # Contact & FAQ page
+            └── chart/                # Chart.js building blocks
+                ├── barGraph.jsx              # Bar chart for expenses
+                ├── doughnutChart.jsx          # Ring chart for income
+                ├── doughnutData.js            # 🔧 Builds income chart data
+                ├── expenseDoughnutChart.jsx   # Ring chart for expenses
+                ├── expenseDoughnutData.js     # 🔧 Builds expense chart data
+                ├── netBalanceChart.jsx        # Bar chart for net balance
+                ├── netBalanceData.js          # 🔧 Builds net balance data
+                ├── topExpensesChart.jsx       # Top 5 expenses
+                ├── topExpensesData.js         # 🔧 Builds top expenses data
+                ├── subcategoryExpenseChart.jsx # Subcategory breakdown
+                ├── subcategoryExpenseData.js  # 🔧 Builds subcategory data
+                ├── monthlyLineChart.jsx       # Income vs Expense line chart
+                ├── monthlyLineData.js         # 🔧 Builds line chart data (FIXED)
+                ├── lineGraph.jsx              # Unused line chart
+                └── lcd.js                     # Unused data file
 ```
 
 ---
 
-## 2. App Shell & Routing (App.jsx)
+## 3. App.jsx — The Boss Component
 
 ### What it does
-The root `<App>` component handles:
-- **Page routing** via a lookup object (not React Router)
-- **Theme state** with `localStorage` persistence
+- Decides which page to show (Dashboard, Expenses, etc.)
+- Manages **theme** (light/dark mode)
 
-### Confusing parts
+### How page routing works (no React Router!)
 
-**Dynamic component lookup (line 11-18, 29):**
 ```jsx
 const pageComponents = { Dashboard, Expenses, Transactions, Portfolio, Settings, Support };
 // ...
-const Page = pageComponents[activePage]
+const Page = pageComponents[activePage]   // Gets the right component by name
 // ...
-<Page theme={theme} onThemeChange={setTheme} />
+<Page theme={theme} onThemeChange={setTheme} />   // Renders it
 ```
-- Instead of React Router, it uses a JavaScript object `pageComponents` as a **component registry**.
-- `activePage` is a string (e.g. `'Dashboard'`), and `pageComponents[activePage]` returns the actual component function.
-- The variable `Page` is capitalized so it can be used as `<Page />` in JSX (React convention: components must start with capital letter).
 
-**Lazy state initializer (line 22-28):**
+**For beginners:** This is a simple "lookup table". When `activePage` is `'Dashboard'`, JavaScript does `pageComponents['Dashboard']` which returns the Dashboard component. It's like looking up a word in a dictionary.
+
+### Theme system
+
 ```jsx
 const [theme, setTheme] = useState(() => {
   try { return localStorage.getItem('covenant-theme') || 'light' }
   catch { return 'light' }
 })
 ```
-- The `useState` argument is a **function** `() => { ... }` not a value. React calls this only once on mount.
-- The `try/catch` handles environments where `localStorage` is unavailable (e.g. private browsing, server-side rendering).
 
-**Theme via `data-theme` attribute (line 32):**
-```jsx
-document.body.dataset.theme = theme
-```
-- Instead of React context or CSS classes, it sets a **data attribute** directly on `<body>`.
-- All CSS variables in `main.css` swap based on `body[data-theme='dark']` selectors (CSS cascade).
+- `localStorage` is like a tiny database in your browser that survives page refreshes.
+- The `try/catch` is a safety net — some browsers block `localStorage` in private mode.
+- When the theme changes, it sets `document.body.dataset.theme = theme` which triggers CSS variables to swap colors.
+
+**Why `() =>` inside `useState`?**  
+React calls this function **only once** when the component first loads. If we just wrote `localStorage.getItem(...)`, it would run on every render.
 
 ---
 
-## 3. Sidebar Navigation (sideBar.jsx)
+## 4. Sidebar (sideBar.jsx) — The Navigation Menu
 
 ### What it does
-Renders a vertical nav bar with icons and labels, highlights the active page.
+Shows the navigation buttons on the left side. Highlights the current page.
 
-### Confusing parts
+### How icons work
 
-**Icon as JSX in a data array (line 6-52):**
 ```jsx
+import { LayoutDashboard, Wallet, ArrowLeftRight, PieChart, Settings, CircleHelp } from 'lucide-react'
+
 const navItems = [
   { label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
-  { label: 'Expenses', icon: <Wallet size={20} /> },
   // ...
 ]
 ```
-- Each `icon` is a **JSX element** stored as object property value. When we render `<span className="sidebar-item-icon">{item.icon}</span>`, it embeds that pre-built JSX.
-- The icons (`lucide-react`) use `currentColor` — they take the text color of whatever element wraps them, which makes them automatically work in light/dark mode.
 
-**Active class conditional (line 70-71):**
+- Each icon is a **React component** from `lucide-react`.
+- They use `currentColor` — meaning they take the text color of whatever surrounds them.
+- This makes them automatically change color in dark mode without any extra code.
+
+### Active page highlighting
+
 ```jsx
 className={`sidebar-item ${activePage === item.label ? 'active' : ''}`}
 ```
-- Template literal conditionally appends `'active'` class when the page name matches.
+
+If the page name matches, add the `active` class. Otherwise, leave it empty.
 
 ---
 
-## 4. Chart Architecture
+## 5. The Data Store (dataStore.js) — Where All Data Lives
 
-### What it does
-The app uses **Chart.js** via `react-chartjs-2`. Each chart is split into two files:
+### The problem it solves
+Originally, every page imported `data.js` directly. If someone wanted to use their own church data, they'd have to edit `data.js` by hand. This was impossible for non-technical users.
 
-| File | Role |
-|------|------|
-| `chart/barGraph.jsx` | Chart.js wrapper component => renders `<Bar>` |
-| `chart/barGraph.js` | Would be the "data builder" (but data may be inline) |
+### How it works now
 
-**Actual pattern found:**
-- `barGraph.jsx`, `doughnutChart.jsx`, `expenseDoughnutChart.jsx`, `netBalanceChart.jsx`, `subcategoryExpenseChart.jsx`, `topExpensesChart.jsx` — these are **Chart.js wrapper components**
-- `doughnutData.js`, `expenseDoughnutData.js`, `netBalanceData.js`, `subcategoryExpenseData.js`, `topExpensesData.js`, `monthlyLineData.js` — these are **data builder modules** that transform raw records into Chart.js-compatible data objects
-
-### Confusing parts
-
-**Chart.js Registration (barGraph.jsx line 1-5):**
 ```jsx
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-ChartJS.defaults.font.style = "normal";
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-```
-- Chart.js v4+ requires **explicit registration** of components. If any scale or element is missing, charts break silently.
-- `ChartJS.defaults.font.style = "normal"` — overrides Chart.js's default italic/bold fonts globally to avoid inheritance issues with Electron's rendering.
+import defaultData from '../../../../data.js'
 
-**Data builder pattern (doughnutData.js):**
-```jsx
-const buildDoughnutData = (records = data.church_expense_tracker.records) => {
+export const getData = () => {
+  // 1. Check if user uploaded custom data (stored in localStorage)
+  const stored = localStorage.getItem('covenant-imported-data')
+  if (stored) {
+    const parsed = JSON.parse(stored)
+    // 2. Validate that it has the right structure
+    if (parsed?.church_expense_tracker?.records) {
+      return parsed
+    }
+  }
+  // 3. Fall back to the bundled data
+  return defaultData
+}
 ```
-- Default parameter: if `records` is `undefined`, it falls back to importing the full dataset directly.
-- This means the function can be called **without arguments** (uses all data) or **with filtered records** (for date range filtering).
 
-**Grouping records into categories (common pattern seen across all data builders):**
-```jsx
-const expenseByCategory = {};
-expenseRecords.forEach((r) => {
-  if (!expenseByCategory[r.category]) expenseByCategory[r.category] = 0;
-  expenseByCategory[r.category] += r.amount;
-});
-```
-- Creates an object where keys are category names, values are summed amounts.
-- Then `Object.entries(expenseByCategory)` converts `{Offertory: 5000, Tithe: 3000}` into `[['Offertory', 5000], ['Tithe', 3000]]` for chart consumption.
+**The flow:**
+1. User uploads a CSV/JSON file on the Settings page → it gets saved to `localStorage`
+2. Every page calls `getData()` → it checks `localStorage` first
+3. If nothing was uploaded, it uses the built-in `data.js`
 
-**Color cycling with modulo (barGraph.jsx line 46):**
-```jsx
-backgroundColor: groupedExpenses.map((_, index) => barColors[index % barColors.length]),
-```
-- `index % barColors.length` ensures colors cycle if there are more categories than available colors.
-- The `(_, index)` syntax: first parameter `_` is unused (the element value), second is the index.
+### CSV parser (the tricky part)
 
-**NetBalanceData: income minus expense per month (netBalanceData.js line 18):**
-```jsx
-const nextValue = record.type === 'income' ? current + record.amount : current - record.amount;
+CSV files store data as comma-separated values:
 ```
-- Uses a single accumulated net value (income - expense) per month, rather than separate arrays.
+id,date,type,category,amount,remarks
+001,2026-01-04,income,Offertory,1850,"First Sunday, January"
+```
 
-**monthlyLineData.js — module-level side effects:**
+**The bug we fixed:** What if a remark contains a comma like `"First Sunday, January"`?  
+The original code used `line.split(',')` which would break it into 6 parts instead of 5.
+
+The fix:
 ```jsx
-const records = data.church_expense_tracker.records;  // line 3
-const incomeByMonth = {};                              // line 8
-records.forEach(r => { /* mutates incomeByMonth */ }); // line 15
+const parseCSVLine = (line) => {
+  // Walk through the line character by character
+  // When we see a " (quote), toggle "quote mode"
+  // Only split on commas when NOT inside quotes
+  let current = ''
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') inQuotes = !inQuotes
+    else if (line[i] === ',' && !inQuotes) {
+      values.push(current.trim())
+      current = ''
+    } else {
+      current += line[i]
+    }
+  }
+  values.push(current.trim())
+}
 ```
-- Data processing runs **at import time**, not when the component renders.
-- This means the data is computed once when the module first loads, and will not respond to props like `records` (filtered range).
-- This contrasts with `buildDoughnutData(records)` which takes `records` as a parameter and recomputes each time.
 
 ---
 
-## 5. Data Layer & Date Handling
+## 6. Dashboard (Dashboard.jsx) — The Main Page
 
 ### What it does
-The data lives in `data.js` as a large exported object imported into multiple files.
+- Shows summary cards (Total Income, Total Expense, Net Balance)
+- Shows 4 charts
+- Has a date range filter (Last 7 days, 30 days, 1 year)
 
-### Confusing parts
+### Date filtering explained
 
-**Import path traversing back several directories:**
-```jsx
-import data from '../../../../data.js'
-```
-- `covenantapp/src/renderer/src/chart/doughnutData.js` goes up 4 levels to reach `covenantapp/data.js`.
-- The `data.js` file is at the root of the `covenantapp` package, not inside `src/`.
-
-**Data access path (Dashboard.jsx line 30):**
-```jsx
-const transactions = data.church_expense_tracker.records;
-```
-- The data object has a nested structure: `data → church_expense_tracker → records[]`.
-
-**Date parsing pattern (Dashboard.jsx line 24, also elsewhere):**
-```jsx
-const parseLocalDate = (dateString) => new Date(`${dateString}T12:00:00`);
-```
-- Dates in the data are `"2026-01-04"` (YYYY-MM-DD format).
-- `new Date("2026-01-04")` would interpret this as UTC midnight.
-- Appending `T12:00:00` forces noon local time, avoiding off-by-one-day errors caused by timezone offsets.
-
-**Date range filtering (Dashboard.jsx line 16-21, 29-31):**
-```jsx
-const getRangeStart = (value) => {
-  const days = Number(value);
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - days);
-  return start;
-};
-
-const filteredTransactions = useMemo(() => {
-  const start = getRangeStart(range);
-  return transactions.filter((t) => parseLocalDate(t.date) >= start);
-}, [range, transactions]);
-```
-- `useMemo` recomputes only when `range` or `transactions` changes.
-- Filters by comparing parsed dates: keeps records where transaction date >= (today - N days).
-
-**Range options with string values:**
 ```jsx
 const RANGE_OPTIONS = [
   { value: '7', label: 'Last 7 days' },
@@ -233,113 +231,299 @@ const RANGE_OPTIONS = [
   { value: '365', label: 'Last year' },
 ];
 ```
-- `value` is a **string** (`'7'`, not `7`), because `<select>` options return strings.
-- `Number(value)` converts it back to a number in `getRangeStart`.
 
-**data.js line 700-704 — exported side effect:**
+**Why is `value` a string (`'7'` not `7`)?**  
+HTML `<select>` elements always return string values. So even though it looks like a number, it comes back as `"7"`. That's why `getRangeStart` calls `Number(value)` to convert it.
+
+### Date parsing trick
+
+```jsx
+const parseLocalDate = (dateString) => new Date(`${dateString}T12:00:00`);
+```
+
+The data has dates like `"2026-01-04"`. If we do `new Date("2026-01-04")`, JavaScript treats it as **midnight UTC**. Depending on your timezone, this could show as the previous day!  
+Adding `T12:00:00` forces **noon local time**, avoiding the timezone shift.
+
+### Charts receive filtered data
+
+```jsx
+const filteredTransactions = useMemo(() => {
+  const start = getRangeStart(range);
+  return transactions.filter((t) => parseLocalDate(t.date) >= start);
+}, [range, transactions]);
+```
+
+`useMemo` says: "only recompute when `range` or `transactions` changes". This prevents unnecessary recalculations.
+
+---
+
+## 7. Transaction Table (Transactions.jsx) — The Data Grid
+
+### What it does
+Shows all records in a table with date range filtering.
+
+### CSS classes from data (the dynamic class trick)
+
+```jsx
+<span className={`type-badge type-${tx.type}`}>{tx.type}</span>
+```
+
+If `tx.type` is `"income"`, the class becomes `type-badge type-income`.  
+If `tx.type` is `"expense"`, the class becomes `type-badge type-expense`.  
+CSS then colors each differently (green for income, red for expense).
+
+### Empty state
+
+```jsx
+{filteredTransactions.length === 0 && <p className="empty-state">No transactions found...</p>}
+```
+
+This uses **short-circuit evaluation**. JavaScript's `&&` operator: if the left side is `true`, it returns the right side. React renders `true` as nothing and `<p>...</p>` as the paragraph. When there ARE transactions, the left side is `false`, so the `<p>` doesn't appear.
+
+---
+
+## 8. Expenses Form (Expenses.jsx) — Adding Records
+
+### What it does
+A form to add new records. Not connected to a database yet — just logs to console.
+
+### Controlled form pattern
+
+```jsx
+const [formData, setFormData] = useState({ category: 'Offertory', ... });
+
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+};
+```
+
+- Every input has a `name` attribute that matches a key in `formData`.
+- `[name]` is a **computed property name** — it uses the variable's value as the key.
+- `(prev) => ({ ...prev, ... })` spreads the previous state and overrides one field.
+
+### Dynamic categories from data (NEW)
+
+```jsx
+const allCategories = () => [...new Set(getRecords().map((r) => r.category))].sort();
+```
+
+**Translation:**  
+1. Get all records
+2. Extract just the `category` field from each
+3. `new Set()` removes duplicates (like a unique filter)
+4. `[...set]` converts it back to an array
+5. `.sort()` alphabetizes
+
+This means if you import data from a different church with different categories, the dropdown automatically updates.
+
+### Subcategory filtering
+
+```jsx
+const getSubcategoriesForCategory = (category) =>
+  [...new Set(getRecords().filter((r) => r.category === category).map((r) => r.subcategory))].sort();
+```
+
+Only shows subcategories that belong to the currently selected category.
+
+---
+
+## 9. Chart System (chart/ folder) — The Graphs
+
+### How it's organized
+
+Each chart has **two files**:
+- `*Data.js` — transforms raw records into Chart.js format
+- `*Chart.jsx` — renders the actual chart component
+
+### Chart.js requirements (the registration trap)
+
+```jsx
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+```
+
+Chart.js v4+ requires **explicit registration** of components. If you forget to register something, the chart silently fails (no error, just blank).
+
+### Default parameter pattern (the bug we fixed)
+
+**BEFORE (BROKEN):**
+```jsx
+// These imported data.js directly as fallback
+const buildDoughnutData = (records = data.church_expense_tracker.records) => { ... }
+```
+
+**AFTER (FIXED):**
+```jsx
+// No import of data.js — records come from wherever calls this function
+const buildDoughnutData = (records = []) => { ... }
+```
+
+**Why was this a bug?**  
+The `data.church_expense_tracker.records` was evaluated at **import time**. So even if the user imported new data, the chart would still use the old default data.
+
+### Color cycling with modulo
+
+```jsx
+backgroundColor: categories.map((_, index) => colors[index % colors.length])
+```
+
+If there are 7 colors and 10 categories: `index % 7` gives `0,1,2,3,4,5,6,0,1,2` — colors cycle!
+
+### Monthly Line Data — the biggest bug we fixed
+
+**BEFORE (BROKEN):**
+```jsx
+// This ran ONCE when the file was imported — not when data changed!
+const records = data.church_expense_tracker.records;  
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];  // Only 6 months!
+const incomeByMonth = {};
+records.forEach(r => { incomeByMonth[month] += r.amount; });
+// Exported a pre-computed object, not a function
+export default monthlyLineData;
+```
+
+**Problems:**
+1. Ran at import time (not when data changes)
+2. Hardcoded to Jan-Jun only
+3. Couldn't handle imported data (still referenced old `data.js`)
+4. If you had 2025 data too, months would collide
+
+**AFTER (FIXED):**
+```jsx
+const buildMonthlyLineData = (records = []) => {
+  // Dynamically build from whatever records are passed in
+  // Supports all 12 months
+  // Uses "Jan 2026" as key (includes year, so no collisions)
+  // Only shows months that actually have data
+};
+export default buildMonthlyLineData;
+```
+
+Now the chart component:
+```jsx
+const MonthlyLineChart = ({ records }) => {
+  const data = buildMonthlyLineData(records || []);
+  return <Line data={data} options={options} />;
+};
+```
+
+---
+
+## 10. Settings Page (Settings.jsx) — Theme & Data Import
+
+### What it does
+- Toggle light/dark mode
+- **NEW: Upload CSV/JSON data files**
+- **NEW: Download sample CSV**
+- **NEW: Reset to default data**
+
+### Upload flow
+
+```jsx
+<label className="import-btn">
+  <Upload size={16} />
+  <span>Upload CSV / JSON</span>
+  <input type="file" accept=".csv,.json" onChange={handleFileUpload} style={{ display: 'none' }} />
+</label>
+```
+
+The `<input>` is hidden (`display: none`). Clicking the `<label>` triggers the file picker.
+
+### File processing
+
+```jsx
+const handleFileUpload = async (e) => {
+  const file = e.target.files[0]
+  const text = await file.text()           // Read file contents
+  const ext = file.name.split('.').pop()   // Get extension (csv or json)
+  
+  let parsed
+  if (ext === 'csv') parsed = parseCSV(text)
+  else parsed = parseJSON(text)
+  
+  importData(parsed)  // Save to localStorage
+}
+```
+
+### Status messages
+
+```jsx
+{status && (
+  <div className={`import-status import-status-${status.type}`}>
+    {status.type === 'success' ? <CheckCircle2 /> : <AlertCircle />}
+    <span>{status.message}</span>
+  </div>
+)}
+```
+
+Green background for success, red for errors. The status message auto-updates on each import attempt.
+
+---
+
+## 11. CSS System (main.css) — How Styling Works
+
+### CSS Variables (the theme engine)
+
+```css
+:root {
+  --app-bg: #f5f5ff;
+  --text-primary: #111827;
+  /* light mode colors */
+}
+
+body[data-theme='dark'] {
+  --app-bg: #0f172a;
+  --text-primary: #f8fafc;
+  /* dark mode colors */
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--text-primary);
+}
+```
+
+When `App.jsx` sets `document.body.dataset.theme = 'dark'`, CSS changes all `--app-bg`, `--text-primary` variables. Everything that uses `var(--app-bg)` automatically updates.
+
+### Layout system
+
+```css
+.app-shell { display: flex; }           /* sidebar + main side by side */
+.sidebar-container { width: 250px; }    /* fixed width sidebar */
+.app-main { flex: 1; overflow-y: auto; } /* remaining space for content */
+```
+
+---
+
+## 12. data.js — The Bundled Sample Data
+
+This is a large file containing 68 sample records for the church.
+
+### Bug we fixed
+
+At the bottom of the file, there was dead code:
 ```js
 const chartdata = data.church_expense_tracker.records.map(item => ({
   x: item.date, y: item.amount
 }));
 console.log(chartdata)
 ```
-- This runs when the module is imported and logs transformed data to console.
-- The variable `chartdata` is not exported, so it's essentially dead code (runs but never used anywhere).
+
+This ran **every time** the file was imported — even in files that didn't use `chartdata`. The variable was never used anywhere. We removed it.
 
 ---
 
-## 6. Theme Toggle System
+## 13. Bugs We Found and Fixed
 
-### What it does
-Settings.jsx renders a toggle button that switches between `'light'` and `'dark'`.
-
-### Confusing parts
-
-**Theme toggle button with CSS-only knob (Settings.jsx line 29-35):**
-```jsx
-<button type="button" className="theme-toggle" onClick={() => onThemeChange(isDark ? 'light' : 'dark')}>
-  <span className={`theme-toggle-knob ${isDark ? 'dark' : 'light'}`} />
-</button>
-```
-- The `<span>` is a visual knob/circle; the sliding animation is handled entirely by CSS.
-- The condition `isDark ? 'light' : 'dark'` — when dark mode is on, switching sends `'light'` (i.e. toggle to light).
-
-**`isDark` derived value (Settings.jsx line 2):**
-```jsx
-const isDark = theme === 'dark'
-```
-- Not stored in state — computed from prop each render.
-
----
-
-## 7. Transactions Table
-
-### What it does
-Renders all filtered transactions in an HTML `<table>`.
-
-### Confusing parts
-
-**Dynamic class for type badge (Transactions.jsx line 65-66):**
-```jsx
-<span className={`type-badge type-${tx.type}`}>{tx.type}</span>
-```
-- Renders `class="type-badge type-income"` or `class="type-badge type-expense"`.
-- CSS uses `.type-expense` / `.type-income` to apply different colors.
-
-**Dynamic class for amount styling (line 69-70):**
-```jsx
-<td className={`amount-value amount-${tx.type}`}>GHS {tx.amount.toLocaleString()}</td>
-```
-- Similar pattern: `.amount-income` vs `.amount-expense` classes apply different text colors.
-
-**Empty state (line 78):**
-```jsx
-{filteredTransactions.length === 0 && <p className="empty-state">No transactions found...</p>}
-```
-- Uses **short-circuit evaluation**: if the left side is `true`, the right side renders.
-- If `filteredTransactions.length === 0` is `false`, React ignores the `<p>` entirely.
-
----
-
-## 8. Expenses Form Page
-
-### What it does
-A controlled form with hardcoded default values (not connected to backend yet).
-
-### Confusing parts
-
-**Controlled form inputs (Expenses.jsx line 6-23):**
-```jsx
-const [formData, setFormData] = useState({
-  date: '2026-01-04',
-  type: 'income',
-  // ...
-});
-const handleChange = (e) => {
-  const { name, value } = e.target;
-  setFormData((prev) => ({ ...prev, [name]: value }));
-};
-```
-- Each `<input>` / `<select>` has `name` and `value={formData[name]}`.
-- `handleChange` uses **computed property name** `[name]` to update the correct field without needing separate handlers.
-- The callback form `setFormData((prev) => ...)` ensures state updates are based on the latest state (avoids stale closure bugs).
-
-**Submit/Cancel buttons log to console only (line 26-30):**
-```jsx
-const handleSubmit = (e) => {
-  e.preventDefault();
-  console.log('Submitted Form Data:', formData);
-};
-```
-- `e.preventDefault()` prevents the browser from reloading the page.
-- No actual API call — data logging only.
-
-**Input icon pattern (Expenses.jsx line 64-72):**
-```jsx
-<div className="input-with-icon">
-  <Calendar className="input-icon-left" size={16} />
-  <input type="date" name="date" ... className="form-input has-icon-left" />
-</div>
-```
-- Icons (`Calendar`, `ChevronDown`, `FileText`) are placed inside the input wrapper alongside the actual `<input>`.
-- CSS positions the icon absolutely inside the input border using `position: relative` on `.input-with-icon`.
+| # | Bug | File(s) | What Was Wrong | How We Fixed |
+|---|---|---|---|---|
+| 1 | Charts ignored imported data | All `*Data.js` files (6 files) | They imported `data.js` as default parameter fallback, so they always used old data | Removed imports — they now accept `records` parameter |
+| 2 | Monthly chart only showed Jan-Jun | `monthlyLineData.js` | Hardcoded 6 months, ran at import time | Converted to function that handles all months + years |
+| 3 | Monthly chart would crash with multi-year data | `monthlyLineData.js` | Months didn't include year (Jan vs Jan 2026) | Added year to keys + chronological sort |
+| 4 | CSV parser broke on quoted commas | `dataStore.js` — `parseCSV` | Used `line.split(',')` which splits inside quotes | Added `parseCSVLine()` that respects quotes |
+| 5 | "Download sample CSV" scrolled page up | `Settings.jsx` | Used `<a href="#">` which jumps to top | Replaced with `<button>` |
+| 6 | Dead code logged to console on every import | `data.js` | `console.log(chartdata)` ran at import time | Removed the lines |
+| 7 | Chart title color doesn't change in dark mode | `netBalanceChart.jsx`, `monthlyLineChart.jsx` | Title color hardcoded to `#111827` | Documented as known limitation (Chart.js options are static) |
+| 8 | Categories form showed only 3 of 15 categories | `Expenses.jsx` | Hardcoded `<option>` elements | Now auto-populates from data |
+| 9 | Sidebar used inline SVGs without dark mode support | `sideBar.jsx` | SVG fill colors were static | Replaced with Lucide React icons (use `currentColor`) |
