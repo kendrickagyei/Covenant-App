@@ -143,17 +143,14 @@ const Settings = ({ theme, onThemeChange }) => {
             </label>
 
             {/* Download sample CSV */}
-            <a
-              href="#"
+            <button
+              type="button"
               className="import-btn secondary"
-              onClick={(e) => {
-                e.preventDefault()
-                downloadSampleCSV()
-              }}
+              onClick={downloadSampleCSV}
             >
               <FileDown size={16} />
               <span>Download sample CSV</span>
-            </a>
+            </button>
 
             {/* Reset to default */}
             {dataInfo.isImported && (

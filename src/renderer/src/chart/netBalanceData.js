@@ -1,5 +1,10 @@
-import data from '../../../../data.js';
-
+/**
+ * Build Chart.js bar data for the monthly net balance (income - expense per month).
+ *
+ * Groups records by month, subtracts expenses from income,
+ * and returns labels + data sorted chronologically.
+ * Accepts any records array — no longer has a hardcoded import of data.js.
+ */
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const buildMonthKey = (date) => {
@@ -8,7 +13,7 @@ const buildMonthKey = (date) => {
   return `${month} ${year}`;
 };
 
-const buildNetBalanceData = (records = data.church_expense_tracker.records) => {
+const buildNetBalanceData = (records = []) => {
   const balanceByMonth = new Map();
 
   records.forEach((record) => {

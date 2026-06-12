@@ -1,6 +1,6 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import monthlyLineData from './monthlyLineData.js';
+import buildMonthlyLineData from './monthlyLineData.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -41,8 +41,9 @@ const options = {
   },
 };
 
-const MonthlyLineChart = () => {
-  return <Line data={monthlyLineData} options={options} />;
+const MonthlyLineChart = ({ records }) => {
+  const data = buildMonthlyLineData(records || []);
+  return <Line data={data} options={options} />;
 };
 
 export default MonthlyLineChart;

@@ -1,6 +1,10 @@
-import data from '../../../../data.js';
-
-const buildExpenseDoughnutData = (records = data.church_expense_tracker.records) => {
+/**
+ * Build Chart.js data for an expense doughnut/ring chart.
+ *
+ * Groups expense records by category and sums amounts.
+ * Accepts any records array — no longer has a hardcoded import of data.js.
+ */
+const buildExpenseDoughnutData = (records = []) => {
   const expenseRecords = records.filter((r) => r.type === 'expense');
 
   const expenseByCategory = {};

@@ -75,11 +75,40 @@ export const getDataInfo = () => {
  * Parse a CSV string into the expected church_expense_tracker data format.
  * Expected CSV columns: id,date,type,category,subcategory,amount,remarks,recorded_by
  */
+/**
+ * Parse a single CSV line into an array of values, handling quoted fields
+ * (values wrapped in double quotes that may contain commas).
+ */
+const parseCSVLine = (line) => {
+  const values = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+    if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim())
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  values.push(current.trim())
+  return values
+}
+
+/**
+ * Parse a CSV string into the expected church_expense_tracker data format.
+ * Expected CSV columns: id,date,type,category,subcategory,amount,remarks,recorded_by
+ * Properly handles values wrapped in double quotes (e.g. "remarks with, commas").
+ */
 export const parseCSV = (csvText) => {
   const lines = csvText.trim().split('\n')
   if (lines.length < 2) throw new Error('CSV must have a header row and at least one data row')
 
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase())
+  const headers = parseCSVLine(lines[0]).map((h) => h.toLowerCase())
   const expected = ['id', 'date', 'type', 'category', 'subcategory', 'amount', 'remarks', 'recorded_by']
 
   const missing = expected.filter((e) => !headers.includes(e))
@@ -88,7 +117,7 @@ export const parseCSV = (csvText) => {
   }
 
   const records = lines.slice(1).map((line, idx) => {
-    const values = line.split(',').map((v) => v.trim())
+    const values = parseCSVLine(line)
     const record = {}
     headers.forEach((header, i) => {
       record[header] = values[i] || ''

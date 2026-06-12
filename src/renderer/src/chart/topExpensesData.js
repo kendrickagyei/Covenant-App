@@ -1,6 +1,11 @@
-import data from '../../../../data.js';
-
-const buildTopExpensesData = (records = data.church_expense_tracker.records) => {
+/**
+ * Build Chart.js data for top 5 expense categories (horizontal bar).
+ *
+ * Groups expense records by category, sums amounts, sorts descending,
+ * and returns the top 5.
+ * Accepts any records array — no longer has a hardcoded import of data.js.
+ */
+const buildTopExpensesData = (records = []) => {
   const expenseRecords = records.filter((r) => r.type === 'expense');
 
   const expenseByCategory = {};

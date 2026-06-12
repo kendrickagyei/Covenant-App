@@ -1,6 +1,11 @@
-import data from '../../../../data.js';
-
-const buildSubcategoryExpenseData = (records = data.church_expense_tracker.records) => {
+/**
+ * Build Chart.js data for a subcategory expense bar chart.
+ *
+ * Groups expense records by subcategory, sums amounts, and returns
+ * the top 15 subcategories sorted by total (highest first).
+ * Accepts any records array — no longer has a hardcoded import of data.js.
+ */
+const buildSubcategoryExpenseData = (records = []) => {
   const expenseRecords = records.filter((r) => r.type === 'expense');
 
   const expenseBySubcategory = {};

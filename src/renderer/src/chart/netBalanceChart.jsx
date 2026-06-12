@@ -13,7 +13,7 @@ const options = {
       text: 'Monthly Net Balance',
       font: { style: 'normal', size: 15, weight: 'bold' },
       padding: { bottom: 10 },
-      color: '#111827',
+      color: '#111827', // hardcoded — does NOT respond to dark mode (known limitation of Chart.js static options)
     },
     legend: { display: false },
   },
