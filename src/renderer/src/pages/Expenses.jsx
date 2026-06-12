@@ -3,18 +3,73 @@ import { Calendar, ChevronDown, FileText } from 'lucide-react';
 import '../assets/main.css';
 import { getData } from '../store/dataStore.js';
 
-const getRecords = () => getData().church_expense_tracker.records;
+const CUSTOM_CAT_KEY = 'covenant-custom-categories';
 
-const allCategories = () => [...new Set(getRecords().map((r) => r.category))].sort();
+// ── helpers ────────────────────────────────────────────────────────
 
-const getSubcategoriesForCategory = (category) =>
-  [...new Set(getRecords().filter((r) => r.category === category).map((r) => r.subcategory))].sort();
+/** Capitalise the first letter of every word in a string. */
+const capitalise = (str) =>
+  str
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+/** Load saved custom categories from localStorage. */
+const getCustomCategories = () => {
+  try {
+    return JSON.parse(localStorage.getItem(CUSTOM_CAT_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
+/** Save custom categories to localStorage. */
+const saveCustomCategories = (cats) => {
+  localStorage.setItem(CUSTOM_CAT_KEY, JSON.stringify(cats));
+};
+
+/** Add a new custom category (with an empty subcategory array). */
+const addCustomCategory = (name) => {
+  const cats = getCustomCategories();
+  if (!cats[name]) cats[name] = [];
+  saveCustomCategories(cats);
+};
+
+/** Add a custom subcategory to an existing category. */
+const addCustomSubcategory = (category, sub) => {
+  const cats = getCustomCategories();
+  if (!cats[category]) cats[category] = [];
+  if (!cats[category].includes(sub)) cats[category].push(sub);
+  saveCustomCategories(cats);
+};
+
+/** Get all categories from data + custom. */
+const allCategories = () => {
+  const dataCats = [...new Set(getData().church_expense_tracker.records.map((r) => r.category))];
+  const customCats = Object.keys(getCustomCategories());
+  return [...new Set([...dataCats, ...customCats])].sort();
+};
+
+/** Get subcategories for a category from data + custom. */
+const getSubcategoriesForCategory = (category) => {
+  const dataSubs = [
+    ...new Set(
+      getData().church_expense_tracker.records
+        .filter((r) => r.category === category)
+        .map((r) => r.subcategory)
+    )
+  ];
+  const customSubs = getCustomCategories()[category] || [];
+  return [...new Set([...dataSubs, ...customSubs])].sort();
+};
+
+// ── component ───────────────────────────────────────────────────────
 
 const Expenses = () => {
   const [formData, setFormData] = useState(() => {
     const cats = allCategories();
-    const firstCat = cats[0];
-    const firstSub = getSubcategoriesForCategory(firstCat)[0];
+    const firstCat = cats[0] || '';
+    const firstSub = getSubcategoriesForCategory(firstCat)[0] || '';
     return {
       date: '2026-01-04',
       type: 'income',
@@ -26,22 +81,96 @@ const Expenses = () => {
     };
   });
 
+  // Track whether the user is typing a brand-new value
+  const [isNewCategory, setIsNewCategory] = useState(false);
+  const [isNewSubcategory, setIsNewSubcategory] = useState(false);
+
   const subcategoryOptions = useMemo(
     () => getSubcategoriesForCategory(formData.category),
     [formData.category]
   );
 
+  // ── change handlers ──────────────────────────────────────────────
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
-      const next = { ...prev, [name]: value };
-      // Reset subcategory when category changes
+      const next = { ...prev, [name]: capitalise(value) };
+
+      // When switching to an existing category, reset subcategory
       if (name === 'category') {
         const subs = getSubcategoriesForCategory(value);
         next.subcategory = subs[0] || '';
+        setIsNewSubcategory(false);
       }
       return next;
     });
+  };
+
+  /**
+   * Called when the user selects "＋ Add new…" in the category dropdown.
+   * Switches to a text input so they can type a brand-new category.
+   */
+  const handleCategorySelect = (e) => {
+    const val = e.target.value;
+    if (val === '__new__') {
+      setIsNewCategory(true);
+      setFormData((prev) => ({ ...prev, category: '', subcategory: '' }));
+      setIsNewSubcategory(false);
+    } else {
+      setIsNewCategory(false);
+      handleChange(e);
+    }
+  };
+
+  /**
+   * Called when the user finishes typing a new category name.
+   * Saves it to localStorage and switches back to dropdown.
+   */
+  const handleNewCategoryBlur = () => {
+    const name = formData.category.trim();
+    if (name) {
+      const capped = capitalise(name);
+      addCustomCategory(capped);
+      setFormData((prev) => ({ ...prev, category: capped }));
+      // Refresh so next time it appears in the dropdown
+    }
+    setIsNewCategory(false);
+  };
+
+  const handleNewCategoryKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleNewCategoryBlur();
+    }
+  };
+
+  const handleSubcategorySelect = (e) => {
+    const val = e.target.value;
+    if (val === '__new__') {
+      setIsNewSubcategory(true);
+      setFormData((prev) => ({ ...prev, subcategory: '' }));
+    } else {
+      setIsNewSubcategory(false);
+      handleChange(e);
+    }
+  };
+
+  const handleNewSubcategoryBlur = () => {
+    const name = formData.subcategory.trim();
+    if (name) {
+      const capped = capitalise(name);
+      addCustomSubcategory(formData.category, capped);
+      setFormData((prev) => ({ ...prev, subcategory: capped }));
+    }
+    setIsNewSubcategory(false);
+  };
+
+  const handleNewSubcategoryKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleNewSubcategoryBlur();
+    }
   };
 
   const handleSubmit = (e) => {
@@ -53,15 +182,112 @@ const Expenses = () => {
     console.log('Form cleared');
   };
 
+  // ── render ────────────────────────────────────────────────────────
+
+  const renderCategoryField = () => {
+    if (isNewCategory) {
+      return (
+        <div className="form-group">
+          <label className="field-label">New Category</label>
+          <div className="input-with-icon">
+            <input
+              type="text"
+              name="category"
+              value={formData.category}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, category: e.target.value }))
+              }
+              onBlur={handleNewCategoryBlur}
+              onKeyDown={handleNewCategoryKeyDown}
+              placeholder="Type new category name…"
+              className="form-input"
+              autoFocus
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="form-group">
+        <label className="field-label">Category</label>
+        <div className="input-with-icon">
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleCategorySelect}
+            className="form-select"
+          >
+            {allCategories().map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+            <option value="__new__">＋ Add new…</option>
+          </select>
+          <ChevronDown className="input-icon-right" size={16} />
+        </div>
+      </div>
+    );
+  };
+
+  const renderSubcategoryField = () => {
+    if (isNewSubcategory) {
+      return (
+        <div className="form-group">
+          <label className="field-label">New Subcategory</label>
+          <div className="input-with-icon">
+            <input
+              type="text"
+              name="subcategory"
+              value={formData.subcategory}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, subcategory: e.target.value }))
+              }
+              onBlur={handleNewSubcategoryBlur}
+              onKeyDown={handleNewSubcategoryKeyDown}
+              placeholder="Type new subcategory name…"
+              className="form-input"
+              autoFocus
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="form-group">
+        <label className="field-label">Subcategory</label>
+        <div className="input-with-icon">
+          <select
+            name="subcategory"
+            value={formData.subcategory}
+            onChange={handleSubcategorySelect}
+            className="form-select"
+          >
+            {subcategoryOptions.map((sub) => (
+              <option key={sub} value={sub}>
+                {sub}
+              </option>
+            ))}
+            <option value="__new__">＋ Add new…</option>
+          </select>
+          <ChevronDown className="input-icon-right" size={16} />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="expense-container">
       <div className="expense-card">
-        
         {/* Header Section */}
         <div className="expense-header">
           <div>
             <h1 className="expense-title">Transaction Recorder</h1>
-            <p className="expense-subtitle">Create a record for an incoming transaction for the account</p>
+            <p className="expense-subtitle">
+              Create a record for an incoming transaction for the account
+            </p>
           </div>
           <button type="button" className="btn-black btn-small">
             Transaction Details
@@ -71,7 +297,6 @@ const Expenses = () => {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="expense-form">
           <div className="form-fields-container">
-            
             {/* Sub-header inside container */}
             <div className="fields-section-title">
               <FileText className="icon-fields" size={16} />
@@ -80,7 +305,6 @@ const Expenses = () => {
 
             {/* Form Fields Grid */}
             <div className="fields-grid">
-              
               {/* Date Field */}
               <div className="form-group">
                 <label className="field-label">Date</label>
@@ -114,40 +338,10 @@ const Expenses = () => {
               </div>
 
               {/* Category Field */}
-              <div className="form-group">
-                <label className="field-label">Category</label>
-                <div className="input-with-icon">
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="form-select"
-                  >
-                    {allCategories().map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="input-icon-right" size={16} />
-                </div>
-              </div>
+              {renderCategoryField()}
 
               {/* Subcategory Field */}
-              <div className="form-group">
-                <label className="field-label">Subcategory</label>
-                <div className="input-with-icon">
-                  <select
-                    name="subcategory"
-                    value={formData.subcategory}
-                    onChange={handleChange}
-                    className="form-select"
-                  >
-                    {subcategoryOptions.map((sub) => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="input-icon-right" size={16} />
-                </div>
-              </div>
+              {renderSubcategoryField()}
 
               {/* Amount Field */}
               <div className="form-group">
@@ -187,7 +381,6 @@ const Expenses = () => {
                   className="form-input"
                 />
               </div>
-
             </div>
           </div>
 
@@ -196,12 +389,15 @@ const Expenses = () => {
             <button type="submit" className="btn-black btn-large">
               Submit
             </button>
-            <button type="button" onClick={handleCancel} className="btn-black btn-large">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="btn-black btn-large"
+            >
               Cancel
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );
