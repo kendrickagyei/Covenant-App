@@ -1,24 +1,46 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Calendar, ChevronDown, FileText } from 'lucide-react';
 import '../assets/main.css';
+import data from '../../../../data.js';
+
+const records = data.church_expense_tracker.records;
+
+const allCategories = [...new Set(records.map((r) => r.category))].sort();
+
+const getSubcategoriesForCategory = (category) =>
+  [...new Set(records.filter((r) => r.category === category).map((r) => r.subcategory))].sort();
 
 const Expenses = () => {
-  const [formData, setFormData] = useState({
-    date: '2026-01-04',
-    type: 'income',
-    category: 'Offertory',
-    subcategory: 'Sunday Offertory',
-    amount: 1850,
-    remarks: 'First Sunday offertory — January',
-    recorded_by: 'Treasurer'
+  const [formData, setFormData] = useState(() => {
+    const firstCat = allCategories[0];
+    const firstSub = getSubcategoriesForCategory(firstCat)[0];
+    return {
+      date: '2026-01-04',
+      type: 'income',
+      category: firstCat,
+      subcategory: firstSub,
+      amount: 1850,
+      remarks: 'First Sunday offertory — January',
+      recorded_by: 'Treasurer'
+    };
   });
+
+  const subcategoryOptions = useMemo(
+    () => getSubcategoriesForCategory(formData.category),
+    [formData.category]
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      // Reset subcategory when category changes
+      if (name === 'category') {
+        const subs = getSubcategoriesForCategory(value);
+        next.subcategory = subs[0] || '';
+      }
+      return next;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -100,9 +122,9 @@ const Expenses = () => {
                     onChange={handleChange}
                     className="form-select"
                   >
-                    <option value="Offertory">Offertory</option>
-                    <option value="Donation">Donation</option>
-                    <option value="Tithe">Tithe</option>
+                    {allCategories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
                   <ChevronDown className="input-icon-right" size={16} />
                 </div>
@@ -118,8 +140,9 @@ const Expenses = () => {
                     onChange={handleChange}
                     className="form-select"
                   >
-                    <option value="Sunday Offertory">Sunday Offertory</option>
-                    <option value="Special Collection">Special Collection</option>
+                    {subcategoryOptions.map((sub) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
                   </select>
                   <ChevronDown className="input-icon-right" size={16} />
                 </div>
