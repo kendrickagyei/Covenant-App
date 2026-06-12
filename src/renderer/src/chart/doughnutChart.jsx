@@ -1,6 +1,6 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import doughnutChartData from './doughnutData.js';
+import buildDoughnutData from './doughnutData.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -27,8 +27,8 @@ const options = {
   cutout: '60%',
 };
 
-const DoughnutChart = () => {
-  return <Doughnut data={doughnutChartData} options={options} />;
+const DoughnutChart = ({ records }) => {
+  return <Doughnut data={buildDoughnutData(records)} options={options} />;
 };
 
 export default DoughnutChart;

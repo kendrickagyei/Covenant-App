@@ -1,6 +1,6 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import subcategoryExpenseData from './subcategoryExpenseData.js';
+import buildSubcategoryExpenseData from './subcategoryExpenseData.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -43,8 +43,8 @@ const options = {
   },
 };
 
-const SubcategoryExpenseChart = () => {
-  return <Bar data={subcategoryExpenseData} options={options} />;
+const SubcategoryExpenseChart = ({ records }) => {
+  return <Bar data={buildSubcategoryExpenseData(records)} options={options} />;
 };
 
 export default SubcategoryExpenseChart;

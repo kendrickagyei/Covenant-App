@@ -1,6 +1,7 @@
-import data from '../../../../data.js'
+import { getData } from '../store/dataStore.js'
 
 const Support = () => {
+  const data = getData()
   const tracker = data.church_expense_tracker
 
   return (

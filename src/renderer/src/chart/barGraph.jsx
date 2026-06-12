@@ -1,8 +1,5 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import cd from '../../../../cd.js';
-
-const { groupedExpenses } = cd;
 
 ChartJS.defaults.font.style = "normal";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -27,21 +24,35 @@ const borderColors = [
   'rgba(201, 203, 207, 1)',
 ];
 
-const chartData = {
-  labels: groupedExpenses.map((d) => d.label),
-  datasets: [
-    {
-      label: 'Expenses',
-      data: groupedExpenses.map((d) => d.total),
-      backgroundColor: groupedExpenses.map((_, index) => barColors[index % barColors.length]),
-      borderColor: groupedExpenses.map((_, index) => borderColors[index % borderColors.length]),
-      borderWidth: 2,
-      borderSkipped: false,
-      barPercentage: 0.72,
-      categoryPercentage: 0.8,
-      maxBarThickness: 110,
-    },
-  ],
+const buildChartData = (records = []) => {
+  const expenseRecords = records.filter((record) => record.type === 'expense');
+  const expenseByCategory = {};
+
+  expenseRecords.forEach((record) => {
+    if (!expenseByCategory[record.category]) {
+      expenseByCategory[record.category] = 0;
+    }
+    expenseByCategory[record.category] += record.amount;
+  });
+
+  const groupedExpenses = Object.entries(expenseByCategory).map(([label, total]) => ({ label, total }));
+
+  return {
+    labels: groupedExpenses.map((d) => d.label),
+    datasets: [
+      {
+        label: 'Expenses',
+        data: groupedExpenses.map((d) => d.total),
+        backgroundColor: groupedExpenses.map((_, index) => barColors[index % barColors.length]),
+        borderColor: groupedExpenses.map((_, index) => borderColors[index % borderColors.length]),
+        borderWidth: 2,
+        borderSkipped: false,
+        barPercentage: 0.72,
+        categoryPercentage: 0.8,
+        maxBarThickness: 110,
+      },
+    ],
+  };
 };
 
 const options = {
@@ -72,8 +83,8 @@ const options = {
   },
 };
 
-const BarGraph = () => {
-  return <Bar data={chartData} options={options} />;
+const BarGraph = ({ records }) => {
+  return <Bar data={buildChartData(records)} options={options} />;
 };
 
 export default BarGraph;

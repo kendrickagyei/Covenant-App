@@ -1,11 +1,47 @@
-import data from '../../../../data.js'
+import { useMemo, useState } from 'react';
+import { getData } from '../store/dataStore.js';
+
+const RANGE_OPTIONS = [
+  { value: '7', label: 'Last 7 days' },
+  { value: '30', label: 'Last 30 days' },
+  { value: '365', label: 'Last year' },
+];
+
+const getRangeStart = (value) => {
+  const days = Number(value);
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - days);
+  return start;
+};
+
+const parseLocalDate = (dateString) => new Date(`${dateString}T12:00:00`);
+
 export default function Transactions() {
+  const [range, setRange] = useState('30');
+  const data = getData();
   const transactions = data.church_expense_tracker.records;
+  const filteredTransactions = useMemo(() => {
+    const start = getRangeStart(range);
+    return transactions.filter((transaction) => parseLocalDate(transaction.date) >= start);
+  }, [range, transactions]);
 
   return (
     <main className="transaction-page">
       <section className="table-card">
-        <h2>Transaction Records</h2>
+        <div className="table-header-row">
+          <h2>Transaction Records</h2>
+          <label className="filter-select-wrap">
+            <span className="filter-label">Date range</span>
+            <select className="filter-select" value={range} onChange={(e) => setRange(e.target.value)}>
+              {RANGE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
         <div className="transaction-table-wrapper">
           <table className="transaction-table">
             <thead>
@@ -20,7 +56,7 @@ export default function Transactions() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
+              {filteredTransactions.map((tx) => (
                 <tr key={tx.id}>
                   <td>{tx.id}</td>
                   <td>{tx.date}</td>
@@ -40,6 +76,7 @@ export default function Transactions() {
             </tbody>
           </table>
         </div>
+        {filteredTransactions.length === 0 && <p className="empty-state">No transactions found for this range.</p>}
       </section>
     </main>
   );

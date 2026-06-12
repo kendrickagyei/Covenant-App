@@ -1,18 +1,19 @@
 import { useMemo, useState } from 'react';
 import { Calendar, ChevronDown, FileText } from 'lucide-react';
 import '../assets/main.css';
-import data from '../../../../data.js';
+import { getData } from '../store/dataStore.js';
 
-const records = data.church_expense_tracker.records;
+const getRecords = () => getData().church_expense_tracker.records;
 
-const allCategories = [...new Set(records.map((r) => r.category))].sort();
+const allCategories = () => [...new Set(getRecords().map((r) => r.category))].sort();
 
 const getSubcategoriesForCategory = (category) =>
-  [...new Set(records.filter((r) => r.category === category).map((r) => r.subcategory))].sort();
+  [...new Set(getRecords().filter((r) => r.category === category).map((r) => r.subcategory))].sort();
 
 const Expenses = () => {
   const [formData, setFormData] = useState(() => {
-    const firstCat = allCategories[0];
+    const cats = allCategories();
+    const firstCat = cats[0];
     const firstSub = getSubcategoriesForCategory(firstCat)[0];
     return {
       date: '2026-01-04',
@@ -122,7 +123,7 @@ const Expenses = () => {
                     onChange={handleChange}
                     className="form-select"
                   >
-                    {allCategories.map((cat) => (
+                    {allCategories().map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>

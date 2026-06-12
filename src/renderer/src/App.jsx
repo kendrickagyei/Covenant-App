@@ -19,12 +19,22 @@ const pageComponents = {
 
 function App() {
   const [activePage, setActivePage] = useState('Dashboard')
-  const [theme, setTheme] = useState(() => localStorage.getItem('covenant-theme') || 'light')
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('covenant-theme') || 'light'
+    } catch {
+      return 'light'
+    }
+  })
   const Page = pageComponents[activePage]
 
   useEffect(() => {
     document.body.dataset.theme = theme
-    localStorage.setItem('covenant-theme', theme)
+    try {
+      localStorage.setItem('covenant-theme', theme)
+    } catch {
+      // Ignore environments where storage is unavailable.
+    }
   }, [theme])
 
   return (

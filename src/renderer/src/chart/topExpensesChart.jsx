@@ -1,6 +1,6 @@
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import topExpensesData from './topExpensesData.js';
+import buildTopExpensesData from './topExpensesData.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -35,8 +35,8 @@ const options = {
   },
 };
 
-const TopExpensesChart = () => {
-  return <Bar data={topExpensesData} options={options} />;
+const TopExpensesChart = ({ records }) => {
+  return <Bar data={buildTopExpensesData(records)} options={options} />;
 };
 
 export default TopExpensesChart;
