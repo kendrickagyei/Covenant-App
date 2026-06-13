@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import SideBar from './components/Sidebar/sideBar'
+import SideBar from './components/Sidebar/Sidebar'
 import appLogo from './assets/wavy-lines.svg'
 import Dashboard from './pages/Dashboard'
 import Expenses from './pages/Expenses'

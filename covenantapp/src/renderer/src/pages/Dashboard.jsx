@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { getData } from '../store/dataStore.js';
-import BarGraph from '../chart/barGraph.jsx';
-import DoughnutChart from '../chart/doughnutChart.jsx';
-import ExpenseDoughnutChart from '../chart/expenseDoughnutChart.jsx';
-import TopExpensesChart from '../chart/topExpensesChart.jsx';
-import NetBalanceChart from '../chart/netBalanceChart.jsx';
-import SubcategoryExpenseChart from '../chart/subcategoryExpenseChart.jsx';
+import BarGraph from '../chart/components/barGraph.jsx';
+import DoughnutChart from '../chart/components/doughnutChart.jsx';
+import ExpenseDoughnutChart from '../chart/components/expenseDoughnutChart.jsx';
+import TopExpensesChart from '../chart/components/topExpensesChart.jsx';
+import NetBalanceChart from '../chart/components/netBalanceChart.jsx';
+import SubcategoryExpenseChart from '../chart/components/subcategoryExpenseChart.jsx';
 
 const RANGE_OPTIONS = [
   { value: '7', label: 'Last 7 days' },
