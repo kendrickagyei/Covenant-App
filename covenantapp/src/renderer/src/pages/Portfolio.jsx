@@ -57,13 +57,10 @@ const Portfolio = () => {
 
   return (
     <main className="page-content">
-      <section className="page-hero" style={{ marginBottom: 18 }}>
+      <section className="page-hero">
         <div>
+          <h1>Portfolio</h1>
           <p className="page-subtitle">Church funds overview</p>
-          <h1 style={{ margin: 0 }}>Portfolio</h1>
-          <p className="page-description">
-            Complete financial totals across all categories.
-          </p>
         </div>
         <label className="filter-select-wrap">
           <span className="filter-label">Date range</span>
@@ -96,55 +93,53 @@ const Portfolio = () => {
         </article>
       </section>
 
-      <section style={{ marginTop: 24 }}>
-        <div className="support-grid">
-          <div className="summary-block">
-            <h2>Income by Category</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border, #e5e7eb)', textAlign: 'left' }}>
-                  <th style={{ padding: '8px 4px' }}>Category</th>
-                  <th style={{ padding: '8px 4px', textAlign: 'right' }}>Amount</th>
+      <section className="support-grid" style={{ marginTop: 24 }}>
+        <div className="summary-block">
+          <h2>Income by Category</h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--border-subtle)', textAlign: 'left' }}>
+                <th style={{ padding: '10px 6px', color: 'var(--text-secondary)', fontWeight: 500 }}>Category</th>
+                <th style={{ padding: '10px 6px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 500 }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {incomeCategories.map((c) => (
+                <tr key={c.category} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '10px 6px' }}>{c.category}</td>
+                  <td style={{ padding: '10px 6px', textAlign: 'right', fontWeight: 600 }}>{tracker.currency} {c.income.toLocaleString()}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {incomeCategories.map((c) => (
-                  <tr key={c.category} style={{ borderBottom: '1px solid var(--border, #e5e7eb)' }}>
-                    <td style={{ padding: '8px 4px' }}>{c.category}</td>
-                    <td style={{ padding: '8px 4px', textAlign: 'right' }}>{tracker.currency} {c.income.toLocaleString()}</td>
-                  </tr>
-                ))}
-                <tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border, #e5e7eb)' }}>
-                  <td style={{ padding: '8px 4px' }}>Total</td>
-                  <td style={{ padding: '8px 4px', textAlign: 'right' }}>{tracker.currency} {totalIncome.toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              ))}
+              <tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border-subtle)' }}>
+                <td style={{ padding: '10px 6px' }}>Total</td>
+                <td style={{ padding: '10px 6px', textAlign: 'right' }}>{tracker.currency} {totalIncome.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <div className="summary-block">
-            <h2>Expense by Category</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border, #e5e7eb)', textAlign: 'left' }}>
-                  <th style={{ padding: '8px 4px' }}>Category</th>
-                  <th style={{ padding: '8px 4px', textAlign: 'right' }}>Amount</th>
+        <div className="summary-block">
+          <h2>Expense by Category</h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--border-subtle)', textAlign: 'left' }}>
+                <th style={{ padding: '10px 6px', color: 'var(--text-secondary)', fontWeight: 500 }}>Category</th>
+                <th style={{ padding: '10px 6px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 500 }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {expenseCategories.map((c) => (
+                <tr key={c.category} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '10px 6px' }}>{c.category}</td>
+                  <td style={{ padding: '10px 6px', textAlign: 'right', fontWeight: 600 }}>{tracker.currency} {c.expense.toLocaleString()}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {expenseCategories.map((c) => (
-                  <tr key={c.category} style={{ borderBottom: '1px solid var(--border, #e5e7eb)' }}>
-                    <td style={{ padding: '8px 4px' }}>{c.category}</td>
-                    <td style={{ padding: '8px 4px', textAlign: 'right' }}>{tracker.currency} {c.expense.toLocaleString()}</td>
-                  </tr>
-                ))}
-                <tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border, #e5e7eb)' }}>
-                  <td style={{ padding: '8px 4px' }}>Total</td>
-                  <td style={{ padding: '8px 4px', textAlign: 'right' }}>{tracker.currency} {totalExpense.toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              ))}
+              <tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border-subtle)' }}>
+                <td style={{ padding: '10px 6px' }}>Total</td>
+                <td style={{ padding: '10px 6px', textAlign: 'right' }}>{tracker.currency} {totalExpense.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>
