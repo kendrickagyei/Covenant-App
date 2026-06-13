@@ -10,12 +10,12 @@ Think of it as a map that shows what each file does, why certain code was writte
 1. What Is This App?
 2. Project Folder Structure
 3. App.jsx — The Boss Component
-4. Sidebar (sideBar.jsx) — The Navigation Menu
+4. Sidebar (Sidebar.jsx) — The Navigation Menu
 5. The Data Store (dataStore.js) — Where All Data Lives
 6. Dashboard (Dashboard.jsx) — The Main Page
 7. Transaction Table (Transactions.jsx) — The Data Grid
 8. Expenses Form (Expenses.jsx) — Adding Records
-9. Chart System (chart/ folder) — The Graphs
+9. Chart System (chart/ folder) — The Graphs (now split into components/ and data/)
 10. Settings Page (Settings.jsx) — Theme and Data Import
 11. CSS System (main.css) — How Styling Works
 12. data.js — The Bundled Sample Data
@@ -53,7 +53,7 @@ covenantapp/                          The main app folder
           dataStore.js                Central data hub
         components/
           Sidebar/
-            sideBar.jsx               Left-side navigation menu
+            Sidebar.jsx               Left-side navigation menu
         pages/
           Dashboard.jsx               Main page with charts
           Transactions.jsx            Table of all records
@@ -61,22 +61,22 @@ covenantapp/                          The main app folder
           Portfolio.jsx               Static info page
           Settings.jsx                Theme toggle and Data Import
           Support.jsx                 Contact and FAQ page
-        chart/                        Chart.js building blocks
-          barGraph.jsx                Bar chart for expenses
-          doughnutChart.jsx           Ring chart for income
-          doughnutData.js             Builds income chart data
-          expenseDoughnutChart.jsx    Ring chart for expenses
-          expenseDoughnutData.js      Builds expense chart data
-          netBalanceChart.jsx         Bar chart for net balance
-          netBalanceData.js           Builds net balance data
-          topExpensesChart.jsx        Top 5 expenses
-          topExpensesData.js          Builds top expenses data
-          subcategoryExpenseChart.jsx Subcategory breakdown
-          subcategoryExpenseData.js   Builds subcategory data
-          monthlyLineChart.jsx        Income vs Expense line chart
-          monthlyLineData.js          Builds line chart data
-          lineGraph.jsx               Unused line chart
-          lcd.js                      Unused data file
+        chart/
+          components/                 Chart.js component files
+            barGraph.jsx              Bar chart for expenses
+            doughnutChart.jsx         Ring chart for income
+            expenseDoughnutChart.jsx  Ring chart for expenses
+            netBalanceChart.jsx       Bar chart for net balance
+            topExpensesChart.jsx      Top 5 expenses
+            subcategoryExpenseChart.jsx Subcategory breakdown
+            monthlyLineChart.jsx      Income vs Expense line chart
+          data/                       Chart data transformation files
+            doughnutData.js           Builds income chart data
+            expenseDoughnutData.js    Builds expense chart data
+            netBalanceData.js         Builds net balance data
+            topExpensesData.js        Builds top expenses data
+            subcategoryExpenseData.js Builds subcategory data
+            monthlyLineData.js        Builds line chart data
 ```
 
 ---
