@@ -42,7 +42,8 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   }
 
   // SQLite error codes
-  const code = typeof error?.code === "string" ? error.code : "";
+  const errWithCode = error as Record<string, unknown>;
+  const code = typeof errWithCode?.code === "string" ? errWithCode.code : "";
 
   // UNIQUE constraint violation
   if (code === "SQLITE_CONSTRAINT_UNIQUE" || code === "23505") {

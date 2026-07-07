@@ -12,7 +12,7 @@ sqlite.pragma("journal_mode = DELETE");
 sqlite.pragma("foreign_keys = ON");
 
 // Integrity check on startup
-const result = sqlite.pragma("integrity_check");
+const result = sqlite.pragma("integrity_check") as Record<string, unknown>[];
 if (result[0]?.integrity_check !== "ok") {
   console.error("⚠️  Database integrity check failed! Run: node seed.js");
 } else {
