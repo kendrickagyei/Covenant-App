@@ -67,7 +67,7 @@ Server runs at **http://localhost:3001**
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `DATABASE_PATH` | Yes | — | SQLite database file path (e.g. `./data/covenant.db`) |
 | `PORT` | No | `3001` | Server port |
 | `NODE_ENV` | No | `development` | `production` enforces API key |
 | `API_KEY` | In prod | — | Protects write routes |

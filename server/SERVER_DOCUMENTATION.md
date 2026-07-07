@@ -52,7 +52,7 @@ This file is kept for backwards compatibility and simply re-exports the database
 This module handles request-level security.
 
 ### Environment validation
-- Ensures `DATABASE_URL` exists.
+- Ensures `DATABASE_PATH` exists.
 - In production, enforces `API_KEY` for write protection.
 
 ### Security headers
@@ -118,7 +118,7 @@ Reusable request body validation helpers used across route modules.
 
 ## Database Connection: `src/db/index.ts`
 
-- Creates a Drizzle ORM database instance using `process.env.DATABASE_URL`.
+- Creates a Drizzle ORM database instance using `process.env.DATABASE_PATH`.
 - Exports `db` for use across route and service modules.
 
 ## Database Schema: `src/db/schema.ts`
@@ -253,7 +253,7 @@ Each file in `src/routes/` exposes a dedicated API resource.
 ## Deployment and Environment
 
 Required environment variables:
-- `DATABASE_URL` — PostgreSQL connection string.
+- `DATABASE_URL` — SQLite database file path.
 - `PORT` — optional server port (defaults to `3001`).
 - `API_KEY` — required in production to protect write routes.
 - `ALLOWED_ORIGINS` — optional comma-separated list of allowed origins.

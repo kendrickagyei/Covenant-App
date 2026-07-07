@@ -41,19 +41,23 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     return;
   }
 
+  // SQLite error codes
   const code = typeof error?.code === "string" ? error.code : "";
 
-  if (code === "23505") {
+  // UNIQUE constraint violation
+  if (code === "SQLITE_CONSTRAINT_UNIQUE" || code === "23505") {
     res.status(409).json({ error: "A matching record already exists" });
     return;
   }
 
-  if (code === "23503") {
+  // FOREIGN KEY constraint violation
+  if (code === "SQLITE_CONSTRAINT_FOREIGNKEY" || code === "23503") {
     res.status(409).json({ error: "Record is still referenced by other data" });
     return;
   }
 
-  if (code === "23514" || code === "22P02") {
+  // CHECK constraint violation or general constraint
+  if (code === "SQLITE_CONSTRAINT" || code === "23514" || code === "22P02") {
     res.status(400).json({ error: "Invalid request data" });
     return;
   }

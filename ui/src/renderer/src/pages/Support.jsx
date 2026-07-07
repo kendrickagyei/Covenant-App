@@ -1,8 +1,21 @@
-import { getData } from '../store/dataStore.js'
+import { useApiData } from '../store/useApiData.js'
 
 const Support = () => {
-  const data = getData()
+  const { data, loading } = useApiData()
   const tracker = data.church_expense_tracker
+
+  if (loading) {
+    return (
+      <main className="page-content">
+        <section className="page-hero">
+          <div>
+            <h1>Support</h1>
+          </div>
+        </section>
+        <p style={{ padding: '32px', color: 'var(--text-secondary)' }}>Loading data from server...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="page-content">

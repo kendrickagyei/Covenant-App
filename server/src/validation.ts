@@ -85,7 +85,7 @@ export const requiredMoney = (body: Record<string, unknown>, field: string) => {
     throw badRequest(`${field} is too large`);
   }
 
-  return numberValue.toFixed(2);
+  return numberValue;
 };
 
 export const requiredDate = (body: Record<string, unknown>, field: string) => {

@@ -5,6 +5,8 @@ const defaultAllowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:5173",
+  "http://localhost:5174",
+  "null", // Electron production (file:// protocol)
 ];
 
 const parseList = (value: string | undefined, fallback: string[]) =>
@@ -16,9 +18,7 @@ const parseList = (value: string | undefined, fallback: string[]) =>
 const allowedOrigins = new Set(parseList(process.env.ALLOWED_ORIGINS, defaultAllowedOrigins));
 
 export const validateEnvironment = () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is required");
-  }
+  // SQLite: no URL required, just a file path.
 
   if (process.env.NODE_ENV === "production" && !process.env.API_KEY) {
     throw new Error("API_KEY is required in production to protect write routes");

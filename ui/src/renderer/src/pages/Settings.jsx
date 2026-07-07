@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useCallback } from 'react'
-import { Upload, FileDown, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react'
-import { importData, resetData, getDataInfo, parseCSV, parseJSON } from '../store/dataStore.js'
+import { Upload, FileDown, RotateCcw, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
+import { importData, resetData, getDataInfo, parseCSV, parseJSON, syncFromAPI } from '../store/dataStore.js'
 
 const MAX_IMPORT_SIZE_BYTES = 2 * 1024 * 1024
 
@@ -64,6 +64,26 @@ const Settings = ({ theme, onThemeChange }) => {
       type: 'success',
       message: 'Reverted to the default bundled dataset.'
     })
+  }, [refreshDataInfo])
+
+  const handleSyncFromServer = useCallback(async () => {
+    setIsProcessing(true)
+    setStatus(null)
+    try {
+      await syncFromAPI()
+      refreshDataInfo()
+      setStatus({
+        type: 'success',
+        message: 'Successfully synced data from the server.'
+      })
+    } catch (err) {
+      setStatus({
+        type: 'error',
+        message: err.message || 'Failed to sync from server. Is the backend running?'
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }, [refreshDataInfo])
 
   return (
@@ -152,6 +172,17 @@ const Settings = ({ theme, onThemeChange }) => {
             >
               <FileDown size={16} />
               <span>Download sample CSV</span>
+            </button>
+
+            {/* Sync from server */}
+            <button
+              type="button"
+              className="import-btn secondary"
+              onClick={handleSyncFromServer}
+              disabled={isProcessing}
+            >
+              <RefreshCw size={16} />
+              <span>Sync from server</span>
             </button>
 
             {/* Reset to default */}

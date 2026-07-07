@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { getData } from '../store/dataStore.js';
+import { useApiData } from '../store/useApiData.js';
 import BarGraph from '../chart/components/barGraph.jsx';
 import DoughnutChart from '../chart/components/doughnutChart.jsx';
 import ExpenseDoughnutChart from '../chart/components/expenseDoughnutChart.jsx';
@@ -25,7 +25,7 @@ const parseLocalDate = (dateString) => new Date(`${dateString}T12:00:00`);
 
 const Dashboard = () => {
   const [range, setRange] = useState('30');
-  const data = getData();
+  const { data, loading } = useApiData();
   const transactions = data.church_expense_tracker.records;
   const filteredTransactions = useMemo(() => {
     const start = getRangeStart(range);
@@ -39,6 +39,17 @@ const Dashboard = () => {
     .filter((t) => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
   const netBalance = totalIncome - totalExpense;
+
+  if (loading) {
+    return (
+      <main className="page-content">
+        <section className="page-hero" style={{ marginBottom: 18 }}>
+          <h1 style={{ margin: 0 }}>Dashboard</h1>
+        </section>
+        <p style={{ padding: '32px', color: 'var(--text-secondary)' }}>Loading data from server...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="page-content">

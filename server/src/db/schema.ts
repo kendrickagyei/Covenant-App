@@ -1,100 +1,70 @@
 // schema.ts
 import {
-  pgTable,
-  serial,
-  varchar,
-  numeric,
-  text,
-  date,
-  timestamp,
+  sqliteTable,
   integer,
+  text,
   unique,
-  check,
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
+  real,
+} from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
 
-// ─── 0. SETTINGS (congregation metadata) ─────────────────────────────────────
-export const settings = pgTable(
-  "settings",
-  {
-    id: serial("id").primaryKey(),
-    congregation: varchar("congregation", { length: 200 }).notNull(),
-    currency: varchar("currency", { length: 10 }).notNull().default("GHS"),
-    period: varchar("period", { length: 100 }).notNull(),
-  }
-);
+// --- 0. SETTINGS (congregation metadata) ---
+export const settings = sqliteTable("settings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  congregation: text("congregation", { length: 200 }).notNull(),
+  currency: text("currency", { length: 10 }).notNull().default("GHS"),
+  period: text("period", { length: 100 }).notNull(),
+});
 
-// ─── 1. CATEGORIES ───────────────────────────────────────────────────────────
-export const categories = pgTable(
-  "categories",
-  {
-    id: serial("id").primaryKey(),
-    name: varchar("name", { length: 50 }).notNull().unique(),
-    type: varchar("type", { length: 10 }).notNull(),
-  },
-  (table) => ({
-    typeCheck: check(
-      "categories_type_check",
-      sql`${table.type} IN ('income', 'expense', 'both')`
-    ),
-  })
-);
+// --- 1. CATEGORIES ---
+export const categories = sqliteTable("categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name", { length: 50 }).notNull().unique(),
+  type: text("type", { length: 10 }).notNull(),
+});
 
-// ─── 2. SUBCATEGORIES ────────────────────────────────────────────────────────
-export const subcategories = pgTable(
+// --- 2. SUBCATEGORIES ---
+export const subcategories = sqliteTable(
   "subcategories",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     categoryId: integer("category_id")
       .notNull()
       .references(() => categories.id, { onDelete: "restrict" }),
-    name: varchar("name", { length: 100 }).notNull(),
+    name: text("name", { length: 100 }).notNull(),
   },
   (table) => ({
     uniqueCategorySubcategory: unique().on(table.categoryId, table.name),
   })
 );
 
-// ─── 3. RECORDERS ────────────────────────────────────────────────────────────
-export const recorders = pgTable("recorders", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull().unique(),
+// --- 3. RECORDERS ---
+export const recorders = sqliteTable("recorders", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name", { length: 100 }).notNull().unique(),
 });
 
-// ─── 4. TRANSACTIONS ─────────────────────────────────────────────────────────
-export const transactions = pgTable(
-  "transactions",
-  {
-    id: serial("id").primaryKey(),
-    date: date("date").notNull(),
-    type: varchar("type", { length: 10 }).notNull(),
-    categoryId: integer("category_id")
-      .notNull()
-      .references(() => categories.id, { onDelete: "restrict" }),
-    subcategoryId: integer("subcategory_id").references(
-      () => subcategories.id,
-      { onDelete: "restrict" }
-    ),
-    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
-    remarks: text("remarks"),
-    recorderId: integer("recorder_id")
-      .notNull()
-      .references(() => recorders.id, { onDelete: "restrict" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  },
-  (table) => ({
-    typeCheck: check(
-      "transactions_type_check",
-      sql`${table.type} IN ('income', 'expense')`
-    ),
-    amountCheck: check(
-      "transactions_amount_check",
-      sql`${table.amount} >= 0`
-    ),
-  })
-);
+// --- 4. TRANSACTIONS ---
+export const transactions = sqliteTable("transactions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  date: text("date").notNull(),
+  type: text("type", { length: 10 }).notNull(),
+  categoryId: integer("category_id")
+    .notNull()
+    .references(() => categories.id, { onDelete: "restrict" }),
+  subcategoryId: integer("subcategory_id").references(
+    () => subcategories.id,
+    { onDelete: "restrict" }
+  ),
+  amount: real("amount").notNull(),
+  remarks: text("remarks"),
+  recorderId: integer("recorder_id")
+    .notNull()
+    .references(() => recorders.id, { onDelete: "restrict" }),
+  createdAt: text("created_at"),
+});
 
-// ─── RELATIONS ────────────────────────────────────────────────────────────────
+// --- RELATIONS ---
 export const categoriesRelations = relations(categories, ({ many }) => ({
   subcategories: many(subcategories),
   transactions: many(transactions),

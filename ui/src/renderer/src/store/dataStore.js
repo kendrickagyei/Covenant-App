@@ -29,21 +29,23 @@ const DEFAULT_IMPORT_META = {
 
 const toCleanString = (value) => String(value ?? '').trim()
 
+const normalizeRecord = (record) => ({
+  id: toCleanString(record.id),
+  date: toCleanString(record.date),
+  type: toCleanString(record.type).toLowerCase(),
+  category: toCleanString(record.category),
+  subcategory: toCleanString(record.subcategory),
+  amount: Number(record.amount ?? 0),
+  remarks: toCleanString(record.remarks),
+  recorded_by: toCleanString(record.recorded_by)
+})
+
 const validateRecord = (record, rowLabel = 'Record') => {
   if (!record || typeof record !== 'object' || Array.isArray(record)) {
     throw new Error(`${rowLabel}: must be an object`)
   }
 
-  const normalized = {
-    id: toCleanString(record.id),
-    date: toCleanString(record.date),
-    type: toCleanString(record.type).toLowerCase(),
-    category: toCleanString(record.category),
-    subcategory: toCleanString(record.subcategory),
-    amount: Number(record.amount),
-    remarks: toCleanString(record.remarks),
-    recorded_by: toCleanString(record.recorded_by)
-  }
+  const normalized = normalizeRecord(record)
 
   const missing = REQUIRED_RECORD_FIELDS.filter((field) => {
     if (field === 'amount') return record.amount === undefined || record.amount === null || record.amount === ''
@@ -135,6 +137,20 @@ export const hasImportedData = () => {
   } catch {
     return false
   }
+}
+
+
+/**
+ * Sync data from the backend API into localStorage.
+ * Returns the fetched data in the normalized tracker format.
+ * Throws if the API is unreachable.
+ */
+export const syncFromAPI = async () => {
+  const { fetchTrackerData } = await import('./api.js')
+  const data = await fetchTrackerData()
+  const normalized = normalizeTrackerData(data)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized))
+  return normalized
 }
 
 /**

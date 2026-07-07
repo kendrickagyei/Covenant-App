@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { getData } from '../store/dataStore.js'
+import { useApiData } from '../store/useApiData.js'
 
 const RANGE_OPTIONS = [
   { value: '7', label: 'Last 7 days' },
@@ -21,7 +21,7 @@ const parseLocalDate = (dateString) => new Date(`${dateString}T12:00:00`)
 
 const Portfolio = () => {
   const [range, setRange] = useState('0')
-  const data = getData()
+  const { data, loading } = useApiData()
   const tracker = data.church_expense_tracker
   const records = tracker.records
 
@@ -54,6 +54,20 @@ const Portfolio = () => {
 
   const incomeCategories = categorySummary.filter((c) => c.income > 0)
   const expenseCategories = categorySummary.filter((c) => c.expense > 0)
+
+  if (loading) {
+    return (
+      <main className="page-content">
+        <section className="page-hero">
+          <div>
+            <h1>Portfolio</h1>
+            <p className="page-subtitle">Church funds overview</p>
+          </div>
+        </section>
+        <p style={{ padding: '32px', color: 'var(--text-secondary)' }}>Loading data from server...</p>
+      </main>
+    )
+  }
 
   return (
     <main className="page-content">

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { getData } from '../store/dataStore.js';
+import { useApiData } from '../store/useApiData.js';
 
 const RANGE_OPTIONS = [
   { value: '7', label: 'Last 7 days' },
@@ -19,12 +19,23 @@ const parseLocalDate = (dateString) => new Date(`${dateString}T12:00:00`);
 
 export default function Transactions() {
   const [range, setRange] = useState('30');
-  const data = getData();
+  const { data, loading } = useApiData();
   const transactions = data.church_expense_tracker.records;
   const filteredTransactions = useMemo(() => {
     const start = getRangeStart(range);
     return transactions.filter((transaction) => parseLocalDate(transaction.date) >= start);
   }, [range, transactions]);
+
+  if (loading) {
+    return (
+      <main className="transaction-page">
+        <section className="table-card">
+          <h2>Transaction Records</h2>
+          <p style={{ padding: '32px', color: 'var(--text-secondary)' }}>Loading data from server...</p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="transaction-page">

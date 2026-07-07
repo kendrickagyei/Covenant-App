@@ -14,7 +14,7 @@ export type RecordPayload = {
   type: TransactionType;
   category: string;
   subcategory: string | null;
-  amount: string;
+  amount: number;
   remarks: string | null;
   recorded_by: string;
 };

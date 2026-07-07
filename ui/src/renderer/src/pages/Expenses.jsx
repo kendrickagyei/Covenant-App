@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Calendar, ChevronDown, FileText } from 'lucide-react';
+import { Calendar, ChevronDown, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import '../assets/main.css';
-import { getData } from '../store/dataStore.js';
+import { useApiData } from '../store/useApiData.js';
+import { createRecord as apiCreateRecord } from '../store/api.js';
 
 const CUSTOM_CAT_KEY = 'covenant-custom-categories';
 const MAX_CUSTOM_LABEL_LENGTH = 80;
@@ -63,16 +64,14 @@ const addCustomSubcategory = (category, sub) => {
 };
 
 /** Get all categories from data + custom. */
-const allCategories = () => {
-  const records = getData().church_expense_tracker.records || [];
+const allCategories = (records) => {
   const dataCats = [...new Set(records.map((r) => r.category).filter(Boolean))];
   const customCats = Object.keys(getCustomCategories());
   return [...new Set([...dataCats, ...customCats])].sort();
 };
 
 /** Get subcategories for a category from data + custom. */
-const getSubcategoriesForCategory = (category) => {
-  const records = getData().church_expense_tracker.records || [];
+const getSubcategoriesForCategory = (records, category) => {
   const dataSubs = [
     ...new Set(
       records
@@ -88,10 +87,14 @@ const getSubcategoriesForCategory = (category) => {
 // ── component ───────────────────────────────────────────────────────
 
 const Expenses = () => {
+  const { data, loading, refresh } = useApiData();
+  const records = data.church_expense_tracker.records || [];
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(() => {
-    const cats = allCategories();
+    const cats = allCategories(records);
     const firstCat = cats[0] || '';
-    const firstSub = getSubcategoriesForCategory(firstCat)[0] || '';
+    const firstSub = getSubcategoriesForCategory(records, firstCat)[0] || '';
     return {
       date: '2026-01-04',
       type: 'income',
@@ -108,8 +111,8 @@ const Expenses = () => {
   const [isNewSubcategory, setIsNewSubcategory] = useState(false);
 
   const subcategoryOptions = useMemo(
-    () => getSubcategoriesForCategory(formData.category),
-    [formData.category]
+    () => getSubcategoriesForCategory(records, formData.category),
+    [records, formData.category]
   );
 
   // ── change handlers ──────────────────────────────────────────────
@@ -124,7 +127,7 @@ const Expenses = () => {
 
       // When switching to an existing category, reset subcategory
       if (name === 'category') {
-        const subs = getSubcategoriesForCategory(value);
+        const subs = getSubcategoriesForCategory(records, value);
         next.subcategory = subs[0] || '';
         setIsNewSubcategory(false);
       }
@@ -198,14 +201,32 @@ const Expenses = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const amount = Number(formData.amount);
     if (!Number.isFinite(amount) || amount < 0) {
-      console.error('Amount must be a non-negative number');
+      setSubmitStatus({ type: 'error', message: 'Amount must be a non-negative number' });
       return;
     }
-    console.log('Submitted Form Data:', { ...formData, amount });
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+    try {
+      await apiCreateRecord({
+        date: formData.date,
+        type: formData.type,
+        category: formData.category,
+        subcategory: formData.subcategory,
+        amount,
+        remarks: formData.remarks,
+        recorded_by: formData.recorded_by
+      });
+      setSubmitStatus({ type: 'success', message: 'Record created successfully!' });
+      refresh();
+    } catch (err) {
+      setSubmitStatus({ type: 'error', message: err.message || 'Failed to create record' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -254,7 +275,7 @@ const Expenses = () => {
             onChange={handleCategorySelect}
             className="form-select"
           >
-            {allCategories().map((cat) => (
+            {allCategories(records).map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
@@ -314,6 +335,21 @@ const Expenses = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="expense-container">
+        <div className="expense-card">
+          <div className="expense-header">
+            <div>
+              <h1 className="expense-title">Transaction Recorder</h1>
+            </div>
+          </div>
+          <p style={{ padding: '32px', color: 'var(--text-secondary)' }}>Loading data from server...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="expense-container">
       <div className="expense-card">
@@ -331,7 +367,17 @@ const Expenses = () => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="expense-form">
+        {submitStatus && (
+            <div className={`import-status import-status-${submitStatus.type}`}>
+              {submitStatus.type === 'success' ? (
+                <CheckCircle2 size={18} />
+              ) : (
+                <AlertCircle size={18} />
+              )}
+              <span>{submitStatus.message}</span>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="expense-form">
           <div className="form-fields-container">
             {/* Sub-header inside container */}
             <div className="fields-section-title">
@@ -424,8 +470,8 @@ const Expenses = () => {
 
           {/* Form Action Buttons */}
           <div className="form-actions">
-            <button type="submit" className="btn-black btn-large">
-              Submit
+            <button type="submit" className="btn-black btn-large" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>
             <button
               type="button"
